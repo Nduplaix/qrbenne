@@ -24,7 +24,7 @@ public class SmsActivity extends AppCompatActivity {
         this.activity = activity;
     }
 
-    void sendSMS(String message) {
+    void sendSMS() {
         if (ContextCompat.checkSelfPermission(context,
                 Manifest.permission.SEND_SMS)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -37,6 +37,6 @@ public class SmsActivity extends AppCompatActivity {
                         MY_PERMISSIONS_REQUEST_READ_CONTACTS);
             }
         }
-        SmsManager.getDefault().sendTextMessage(phoneNumber, null, message, null, null);
+        SmsManager.getDefault().sendTextMessage(phoneNumber, null, "Une nouvelle benne vient d'etre scannée", null, null);
     }
 }
