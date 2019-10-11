@@ -2,9 +2,15 @@ package com.example.qrbenne;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
+
+    private Button buttonScan;
+    private Button buttonMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -12,5 +18,30 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         SmsActivity mSmsActivity = new SmsActivity(this, this);
         // TODO Envoyer le SMS quelque part
+
+        buttonScan = (Button) findViewById(R.id.scan);
+        buttonMap = (Button) findViewById(R.id.map);
+
+        buttonScan.setOnClickListener(
+            new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(MainActivity.this, ScanActivity.class);
+                    startActivity(intent);
+                }
+            }
+        );
+
+
+        buttonMap.setOnClickListener(
+            new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(MainActivity.this, MapActivity.class);
+                    startActivity(intent);
+                }
+            }
+
+        );
     }
 }
