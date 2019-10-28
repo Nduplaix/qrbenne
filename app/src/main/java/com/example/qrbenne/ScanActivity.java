@@ -18,12 +18,24 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.zxing.Result;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.logging.Logger;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
@@ -36,7 +48,9 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
     private ZXingScannerView scannerView;
     private LocationManager locationManager;
     private LocationListener locationListener;
-    private String locationContent;
+    private double latitude;
+    private double longitude;
+    private static String URL = "https://nicolasduplaix.com/api/qrbenne/bennes";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +71,8 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
         locationListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                locationContent = "\nlocation :" + location.getLatitude() + " " + location.getLongitude();
+                latitude = location.getLatitude();
+                longitude = location.getLongitude();
 
             }
 
@@ -202,12 +217,57 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
                 startActivity(intent);
             }
         });
-        builder.setMessage(locationContent);
+
+        builder.setMessage("coordonées envoiyées\n" + scanResult);
         AlertDialog alert = builder.create();
         alert.show();
 
 
         SmsActivity smsActivity = new SmsActivity(this,this);
         smsActivity.sendSMS();
+
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+
+
+        JSONObject params = new JSONObject();
+
+        try {
+            params.put("latitude", latitude);
+            params.put("longitude", longitude);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String id = scanResult.substring(6);
+        JsonObjectRequest objectRequest = new JsonObjectRequest(
+                Request.Method.PATCH,
+                URL + '/' + id,
+                params,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        JSONObject jsonObject = null;
+                        try {
+                            jsonObject = response.getJSONObject("hydra:member");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        error.printStackTrace();
+                    }
+                }
+        );
+
+        requestQueue.add(objectRequest);
+
+
+
+
+
     }
 }
