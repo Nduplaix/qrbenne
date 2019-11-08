@@ -139,6 +139,7 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
                             if (shouldShowRequestPermissionRationale(CAMERA))
                             {
                                 displayMessage("you need to allow access for both permission",
+                                        "",
                                         new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
@@ -188,9 +189,10 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
      * @param message
      * @param listener
      */
-    public void displayMessage(String message, DialogInterface.OnClickListener listener)
+    public void displayMessage(String message, String title, DialogInterface.OnClickListener listener)
     {
         new AlertDialog.Builder(ScanActivity.this)
+                .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton("OK", listener)
                 .setNegativeButton("Cancel", null)
@@ -201,30 +203,6 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
     @Override
     public void handleResult(Result result) {
         final String scanResult = result.getText();
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("scanResult");
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(ScanActivity.this, MainActivity.class);
-                startActivity(intent);
-            }
-        });
-        builder.setNeutralButton("Visit", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(scanResult));
-                startActivity(intent);
-            }
-        });
-
-        builder.setMessage("coordonées envoiyées\n" + scanResult);
-        AlertDialog alert = builder.create();
-        alert.show();
-
-
-        SmsActivity smsActivity = new SmsActivity(this,this);
-        smsActivity.sendSMS();
 
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
@@ -239,35 +217,69 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
             e.printStackTrace();
         }
 
-        String id = scanResult.substring(6);
-        JsonObjectRequest objectRequest = new JsonObjectRequest(
-                Request.Method.PATCH,
-                URL + '/' + id,
-                params,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        JSONObject jsonObject = null;
-                        try {
-                            jsonObject = response.getJSONObject("hydra:member");
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+        try {
+            String id = scanResult.substring(6);
+            JsonObjectRequest objectRequest = new JsonObjectRequest(
+                    Request.Method.PATCH,
+                    URL + '/' + id,
+                    params,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            JSONObject jsonObject = null;
+                            try {
+                                jsonObject = response;
+                                displayMessage(
+                                        "Les coordonnées ont bien été envoyés! \n" + scanResult,
+                                        "Validé !",
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                Intent intent = new Intent(ScanActivity.this, MainActivity.class);
+                                                startActivity(intent);
+                                            }
+                                        }
+                                );
+                            } catch (Exception e) {
+                                System.out.println(response);
+                                e.printStackTrace();
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            displayMessage(
+                                    "Une erreure est survenu lors de la lecture du QR Code",
+                                    "Erreur !",
+                                    new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            Intent intent = new Intent(ScanActivity.this, MainActivity.class);
+                                            startActivity(intent);
+                                        }
+                                    }
+                            );
+                            error.printStackTrace();
                         }
                     }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
+            );
+
+            requestQueue.add(objectRequest);
+        } catch (Exception e) {
+            displayMessage(
+                    "Une erreure est survenu lors de la lecture du QR Code",
+                    "Erreur !",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(ScanActivity.this, MainActivity.class);
+                            startActivity(intent);
+                        }
                     }
-                }
-        );
-
-        requestQueue.add(objectRequest);
-
-
-
-
+            );
+            e.printStackTrace();
+        }
 
     }
 }
