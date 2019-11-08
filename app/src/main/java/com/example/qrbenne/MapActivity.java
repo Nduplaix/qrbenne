@@ -89,7 +89,7 @@ public class MapActivity extends AppCompatActivity {
         myOpenMapView = (MapView)findViewById(R.id.mapview);
         myOpenMapView.setTileSource(TileSourceFactory.MAPNIK);
         myOpenMapView.getController().setCenter(new GeoPoint(48.8588377, 2.2770206));
-        myOpenMapView.getController().setZoom(17.00);
+        myOpenMapView.getController().setZoom(12.00);
 
         LocationListener gpsListener = new LocationListener() {
             @Override
