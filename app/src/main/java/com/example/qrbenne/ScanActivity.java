@@ -51,11 +51,19 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
     private double latitude;
     private double longitude;
     private static String URL = "https://nicolasduplaix.com/api/qrbenne/bennes";
+    private SmsActivity mSmsActivity = new SmsActivity(this, this);
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         scannerView = new ZXingScannerView(this);
+
+        displayMessage(
+                "Veuillez attendre la détection de la localisation, un message apparaîtra",
+                "Attente de localisation",
+                null
+        );
 
         setContentView(scannerView);
 
@@ -73,6 +81,12 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
             public void onLocationChanged(Location location) {
                 latitude = location.getLatitude();
                 longitude = location.getLongitude();
+
+                displayMessage(
+                        "Vous pouvez scanner",
+                        "Localisation trouvée",
+                        null
+                );
 
             }
 
@@ -240,6 +254,7 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
                                             }
                                         }
                                 );
+                                mSmsActivity.sendSMS();
                             } catch (Exception e) {
                                 System.out.println(response);
                                 e.printStackTrace();

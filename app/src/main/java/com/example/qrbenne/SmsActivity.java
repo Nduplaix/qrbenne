@@ -14,7 +14,7 @@ import androidx.core.content.ContextCompat;
 @TargetApi(28)
 public class SmsActivity extends AppCompatActivity {
 
-    private static String phoneNumber = "5554";
+    private static String phoneNumber = "0684272084";
     private final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
     private Context context;
     private Activity activity;
