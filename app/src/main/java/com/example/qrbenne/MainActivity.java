@@ -23,8 +23,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        SmsActivity mSmsActivity = new SmsActivity(this, this);
-        // TODO Envoyer le SMS quelque part
+
 
         buttonScan = (Button) findViewById(R.id.scan);
         buttonMap = (Button) findViewById(R.id.map);
