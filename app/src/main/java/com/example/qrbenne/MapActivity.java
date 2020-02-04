@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
@@ -31,15 +32,21 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
 
+import java.io.IOException;
+
 public class MapActivity extends AppCompatActivity {
 
     private Button buttonBack;
     private MapView myOpenMapView;
-    private static String URL = "https://nicolasduplaix.com/api/qrbenne/bennes";
+
+    public MapActivity() throws IOException {
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        final Boolean[] centered = {false};
 
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -47,16 +54,6 @@ public class MapActivity extends AppCompatActivity {
             }else {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        1);
-            }
-        }
-
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-            }else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         1);
             }
         }
@@ -88,13 +85,15 @@ public class MapActivity extends AppCompatActivity {
 
         myOpenMapView = (MapView)findViewById(R.id.mapview);
         myOpenMapView.setTileSource(TileSourceFactory.MAPNIK);
-        myOpenMapView.getController().setCenter(new GeoPoint(48.8588377, 2.2770206));
         myOpenMapView.getController().setZoom(12.00);
 
         LocationListener gpsListener = new LocationListener() {
             @Override
             public void onLocationChanged(Location location) {
-                myOpenMapView.getController().setCenter(new GeoPoint(location.getLatitude(), location.getLongitude()));
+                if (!centered[0]) {
+                    myOpenMapView.getController().setCenter(new GeoPoint(location.getLatitude(), location.getLongitude()));
+                    centered[0] = true;
+                }
             }
 
             @Override
@@ -112,6 +111,20 @@ public class MapActivity extends AppCompatActivity {
 
             }
         };
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(
+                    new String[] {
+                            Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.INTERNET
+                    },
+                    10
+            );
+
+            return;
+        } else {
+            LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            locationManager.requestLocationUpdates("gps", 5000, 0, gpsListener);
+        }
 
          buttonBack = (Button) findViewById(R.id.button);
 
@@ -131,7 +144,7 @@ public class MapActivity extends AppCompatActivity {
 
         JsonObjectRequest objectRequest = new JsonObjectRequest(
                 Request.Method.GET,
-                URL,
+                Helper.getMetaData(this, Helper.URL_API),
                 null,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -151,7 +164,6 @@ public class MapActivity extends AppCompatActivity {
                                 marker.setTitle(id);
                                 marker.setPosition(new GeoPoint(latitude, longitude));
                                 myOpenMapView.getOverlays().add(marker);
-                                myOpenMapView.getController().setCenter(new GeoPoint(latitude, longitude));
                             }
 
                         } catch (JSONException e) {

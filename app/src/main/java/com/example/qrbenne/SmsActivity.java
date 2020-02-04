@@ -11,15 +11,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.io.IOException;
+
 @TargetApi(28)
 public class SmsActivity extends AppCompatActivity {
-
-    private static String phoneNumber = "0684272084";
     private final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 1;
     private Context context;
     private Activity activity;
 
-    public SmsActivity(Context context, Activity activity){
+    public SmsActivity(Context context, Activity activity) throws IOException {
         this.context = context;
         this.activity = activity;
     }
@@ -37,6 +37,6 @@ public class SmsActivity extends AppCompatActivity {
                         MY_PERMISSIONS_REQUEST_READ_CONTACTS);
             }
         }
-        SmsManager.getDefault().sendTextMessage(phoneNumber, null, "Une nouvelle benne vient d'etre scannée", null, null);
+        SmsManager.getDefault().sendTextMessage(Helper.getMetaData(this, Helper.PHONE_NUMBER), null, "Une nouvelle benne vient d'etre scannée", null, null);
     }
 }

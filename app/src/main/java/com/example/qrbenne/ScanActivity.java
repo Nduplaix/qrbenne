@@ -35,6 +35,7 @@ import com.google.zxing.Result;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
@@ -50,14 +51,18 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
     private LocationListener locationListener;
     private double latitude;
     private double longitude;
-    private static String URL = "https://nicolasduplaix.com/api/qrbenne/bennes";
     private SmsActivity mSmsActivity = new SmsActivity(this, this);
+
+    public ScanActivity() throws IOException {
+    }
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         scannerView = new ZXingScannerView(this);
+
+        final Boolean[] created = {false};
 
         displayMessage(
                 "Veuillez attendre la détection de la localisation, un message apparaîtra",
@@ -82,12 +87,14 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
                 latitude = location.getLatitude();
                 longitude = location.getLongitude();
 
-                displayMessage(
-                        "Vous pouvez scanner",
-                        "Localisation trouvée",
-                        null
-                );
-
+                if (!created[0]) {
+                    displayMessage(
+                            "Vous pouvez scanner",
+                            "Localisation trouvée",
+                            null
+                    );
+                    created[0] = true;
+                }
             }
 
             @Override
@@ -220,6 +227,7 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
 
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
+        String URL = Helper.getMetaData(this, Helper.URL_API);
 
 
         JSONObject params = new JSONObject();
@@ -265,7 +273,7 @@ public class ScanActivity extends AppCompatActivity implements ZXingScannerView.
                         @Override
                         public void onErrorResponse(VolleyError error) {
                             displayMessage(
-                                    "Une erreure est survenu lors de la lecture du QR Code",
+                                    "Une eaure du QR Code",
                                     "Erreur !",
                                     new DialogInterface.OnClickListener() {
                                         @Override
